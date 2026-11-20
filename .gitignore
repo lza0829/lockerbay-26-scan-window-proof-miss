@@ -1,0 +1,11 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# 本地 SQLite 数据与冒烟库
+backend/data/
+
+# Node / 前端构建
+frontend/node_modules/
+frontend/dist/

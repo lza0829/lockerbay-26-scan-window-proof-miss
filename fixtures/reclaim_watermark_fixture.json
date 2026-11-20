@@ -1,0 +1,24 @@
+{
+  "scanner": "overdue-reclaim-scanner",
+  "overdue_hours": 48,
+  "scan_now_1": "2026-11-20T12:00:00Z",
+  "scan_now_2": "2026-11-22T12:00:00Z",
+  "cabinets": [
+    {"id": "CAB-T", "label": "回收演练柜", "site": "夹具场地"}
+  ],
+  "cells": [
+    {"id": "CAB-T-01", "cabinet_id": "CAB-T", "code": "T01", "size_code": "M"},
+    {"id": "CAB-T-02", "cabinet_id": "CAB-T", "code": "T02", "size_code": "M"},
+    {"id": "CAB-T-03", "cabinet_id": "CAB-T", "code": "T03", "size_code": "M"},
+    {"id": "CAB-T-04", "cabinet_id": "CAB-T", "code": "T04", "size_code": "M"},
+    {"id": "CAB-T-05", "cabinet_id": "CAB-T", "code": "T05", "size_code": "M"}
+  ],
+  "occupancies": [
+    {"id": "OCC-T-A01", "cell_id": "CAB-T-01", "tracking_no": "TN-A01", "opened_at": "2026-11-17T08:00:00Z", "group": "A"},
+    {"id": "OCC-T-A02", "cell_id": "CAB-T-02", "tracking_no": "TN-A02", "opened_at": "2026-11-17T09:00:00Z", "group": "A"},
+    {"id": "OCC-T-A03", "cell_id": "CAB-T-03", "tracking_no": "TN-A03", "opened_at": "2026-11-17T10:00:00Z", "group": "A"},
+    {"id": "OCC-T-B01", "cell_id": "CAB-T-04", "tracking_no": "TN-B01", "opened_at": "2026-11-19T08:00:00Z", "group": "B"},
+    {"id": "OCC-T-B02", "cell_id": "CAB-T-05", "tracking_no": "TN-B02", "opened_at": "2026-11-19T09:00:00Z", "group": "B"}
+  ],
+  "note": "A 组 3 单在 scan_now_1 已超时（cutoff=2026-11-18T12:00Z）；B 组 2 单首批未超时，scan_now_2 才超时（cutoff=2026-11-20T12:00Z）。首批对 A02 注入中途失败，验证整批回滚、水位不抬。"
+}
