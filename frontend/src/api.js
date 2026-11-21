@@ -23,4 +23,6 @@ export const api = {
     req('/api/reclaim/scan', { method: 'POST', body: JSON.stringify(body) }),
   reclaimProof: () => req('/api/reclaim/watermark-proof'),
   reclaimScanWindow: () => req('/api/reclaim-scan/window'),
+  reclaimWindows: () => req('/api/reclaim/windows'),
+  reclaimWindowProof: () => req('/api/reclaim/window-proof'),
 }

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { api } from '../api.js'
 const rows = ref([])
 const proof = ref(null)
+const win = ref(null)
 const report = ref(null)
 const failOn = ref('')
 const err = ref('')
@@ -10,6 +11,7 @@ const err = ref('')
 async function load() {
   rows.value = await api.occupancies()
   proof.value = await api.reclaimProof()
+  win.value = await api.reclaimScanWindow()
 }
 async function scan() {
   err.value = ''
@@ -29,7 +31,7 @@ onMounted(load)
 
   <div>
     <h1>回收</h1>
-    <p class="sub">超时回收按持久水位扫描：本批只处理 opened_at ≤ 水位且已超时的占用；关账与水位装载后，失败整批回滚、水位不抬。</p>
+    <p class="sub">超时回收按持久水位扫描：本批只处理 opened_at ≤ 水位且已超时的占用；关账、水位前进与扫描窗口证明同一事务固化，失败整批回滚、水位不抬、窗口不留残骸。</p>
 
     <div class="panel" v-if="proof">
       <h2 style="margin:0 0 .5rem;font-size:1rem">回收水位核对（只读）</h2>
@@ -42,6 +44,33 @@ onMounted(load)
           <tr><th>本批关闭数</th><td>{{ proof.last_closed_count }}</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="panel" style="margin-top:1rem" v-if="win">
+      <h2 style="margin:0 0 .5rem;font-size:1rem">本趟扫描窗口证明（只读）</h2>
+      <p v-if="!win.complete" class="sub">尚无成功扫描批：水位未抬、窗口未固化。</p>
+      <template v-else>
+        <table>
+          <tbody>
+            <tr><th>窗口批次</th><td><code>{{ win.batch_id }}</code></td></tr>
+            <tr>
+              <th>窗口区间 (from, to]</th>
+              <td><code>{{ win.from_watermark ? win.from_watermark : '—（首批，下界 -∞）' }}</code> → <code>{{ win.to_watermark }}</code></td>
+            </tr>
+            <tr><th>超时闸临界</th><td><code>{{ win.cutoff_ts }}</code>（{{ win.overdue_hours }}h 未取）</td></tr>
+            <tr>
+              <th>成员占用 ∈ 窗口</th>
+              <td :style="{ color: win.members_in_window ? '#86efac' : '#fca5a5' }">
+                {{ win.member_count }} 单 {{ win.members_in_window ? '✓ 均落在 (from, to] 内' : '✗ 存在窗口外成员' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="sub" style="margin:.5rem 0 0">
+          成员占用 id：<code v-for="id in win.member_ids" :key="id" style="margin-right:.5rem">{{ id }}</code>
+          <span v-if="!win.member_ids.length">（空窗口：本趟 0 关闭）</span>
+        </p>
+      </template>
     </div>
 
     <div class="panel" style="margin-top:1rem">

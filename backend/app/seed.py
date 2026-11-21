@@ -103,6 +103,21 @@ CREATE TABLE IF NOT EXISTS reclaim_events (
   event_id TEXT,
   UNIQUE(batch_id, occupancy_id)
 );
+
+-- 回收扫描窗口证明（落库形态择一：独立 reclaim_scan_window 表；非水位行 window_json 快照）
+-- 每趟成功批一行：from/to 水位区间 + 本趟成员占用 id 快照 + 超时闸临界；
+-- 与关账、水位前进同事务写入，失败批整体回滚、不留窗口残骸。
+CREATE TABLE IF NOT EXISTS reclaim_scan_window (
+  batch_id TEXT PRIMARY KEY,
+  scanner_name TEXT NOT NULL,
+  from_watermark TEXT,
+  to_watermark TEXT NOT NULL,
+  cutoff_ts TEXT NOT NULL,
+  overdue_hours INTEGER NOT NULL,
+  member_count INTEGER NOT NULL DEFAULT 0,
+  member_ids_json TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT NOT NULL
+);
 """
 
 

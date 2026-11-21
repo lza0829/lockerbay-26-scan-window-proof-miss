@@ -137,14 +137,49 @@ def get_reclaim_watermark_proof(scanner: str | None = None):
     finally:
         conn.close()
 
-# --- plant routes ---
+# --- 回收扫描窗口证明（只读） ---
 from app.modules import reclaim_scan_window as scan_win
 
+
 @router.get("/reclaim-scan/window")
-def reclaim_scan_window():
+def reclaim_scan_window(scanner: str | None = None):
+    """末趟扫描窗口证明：from/to 水位 + 本趟成员占用 id。"""
     conn = connect()
     try:
-        return scan_win.latest_window(conn)
+        return scan_win.latest_window(conn, scanner or reclaim_svc.DEFAULT_SCANNER)
+    finally:
+        conn.close()
+
+
+@router.get("/reclaim/windows")
+def reclaim_windows(scanner: str | None = None):
+    """每趟窗口可查：该扫描器全部成功批的窗口证明链（按提交顺序）。"""
+    conn = connect()
+    try:
+        return scan_win.list_windows(conn, scanner or reclaim_svc.DEFAULT_SCANNER)
+    finally:
+        conn.close()
+
+
+@router.get("/reclaim/windows/{batch_id}")
+def reclaim_window_for_batch(batch_id: str):
+    """单趟窗口证明：按批号取回；失败批已回滚、无窗口残骸，返回 404。"""
+    conn = connect()
+    try:
+        w = scan_win.window_for_batch(conn, batch_id)
+        if w is None:
+            raise HTTPException(404, "该批无窗口证明（未跑批或批已失败回滚）")
+        return w
+    finally:
+        conn.close()
+
+
+@router.get("/reclaim/window-proof")
+def reclaim_window_proof(scanner: str | None = None):
+    """窗口核证只读接口：窗口链与水位前进互证、成员∈窗口、台账/关账/占用账三方对账。"""
+    conn = connect()
+    try:
+        return scan_win.window_proof(conn, scanner or reclaim_svc.DEFAULT_SCANNER)
     finally:
         conn.close()
 
